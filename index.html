@@ -1,19 +1,16 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Dexscreener - Solana Coins</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solana Coinscanner</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { margin-top: 40px; }
+    h2 { margin-top: 30px; }
     .table-wrapper { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 600px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background-color: #f4f4f4; }
-    a { color: blue; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
     @media (max-width: 600px) {
       body { font-size: 14px; margin: 10px; }
       table { min-width: 100%; font-size: 12px; }
@@ -21,31 +18,15 @@
   </style>
 </head>
 <body>
-  <h1>Solana Coins auf Dexscreener</h1>
+  <h1>Solana Coins (Dexscreener)</h1>
 
-  <h2>Neue Coins (letzte 10 Listings auf Solana)</h2>
   <div class="table-wrapper">
-    <table id="new-coins-table">
+    <table id="coin-table">
       <thead>
         <tr>
           <th>Name</th>
-          <th>DEX</th>
-          <th>Pair</th>
-          <th>Geprüft</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <h2>Top 10 Solana Coins nach Volume</h2>
-  <div class="table-wrapper">
-    <table id="top-coins-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Volume (24h)</th>
           <th>Preis</th>
+          <th>Volume (24h)</th>
           <th>DEX</th>
           <th>Link</th>
         </tr>
@@ -55,56 +36,34 @@
   </div>
 
   <script>
-    async function loadDexscreenerData() {
+    async function loadCoins() {
+      const apiUrl = "https://corsproxy.io/?https://api.dexscreener.com/latest/dex/pairs";
       try {
-        const res = await fetch('https://api.dexscreener.com/latest/dex/pairs');
+        const res = await fetch(apiUrl);
         const data = await res.json();
-        const solanaPairs = data.pairs.filter(pair => pair.chainId === "solana");
+        const solanaPairs = data.pairs.filter(pair => pair.chainId === "solana").slice(0, 10);
 
-        // Tabellen leeren
-        document.querySelector("#new-coins-table tbody").innerHTML = "";
-        document.querySelector("#top-coins-table tbody").innerHTML = "";
+        const table = document.querySelector("#coin-table tbody");
+        table.innerHTML = "";
 
-        // Neue Solana Coins – zeige die neuesten 10
-        const newCoins = solanaPairs.slice(0, 10);
-        const newTable = document.querySelector("#new-coins-table tbody");
-        newCoins.forEach(pair => {
-          newTable.innerHTML += `
+        solanaPairs.forEach(pair => {
+          table.innerHTML += `
             <tr>
               <td>${pair.baseToken.name} (${pair.baseToken.symbol})</td>
-              <td>${pair.dexId}</td>
-              <td>${pair.baseToken.symbol}/${pair.quoteToken.symbol}</td>
-              <td>${pair.pairCreatedAt ? 'Ja' : 'Nein'}</td>
-            </tr>
-          `;
-        });
-
-        // Top 10 nach Volume (aus allen Solana-Pairs)
-        const topCoins = solanaPairs
-          .sort((a, b) => b.volume.h24 - a.volume.h24)
-          .slice(0, 10);
-
-        const topTable = document.querySelector("#top-coins-table tbody");
-        topCoins.forEach(pair => {
-          topTable.innerHTML += `
-            <tr>
-              <td>${pair.baseToken.name} (${pair.baseToken.symbol})</td>
+              <td>$${parseFloat(pair.priceUsd).toFixed(6)}</td>
               <td>$${Number(pair.volume.h24).toLocaleString()}</td>
-              <td>$${Number(pair.priceUsd).toFixed(6)}</td>
               <td>${pair.dexId}</td>
               <td><a href="${pair.url}" target="_blank">Link</a></td>
             </tr>
           `;
         });
-
-      } catch (error) {
-        console.error("Fehler beim Laden der Dexscreener-Daten:", error);
+      } catch (e) {
+        console.error("Fehler beim Laden der Daten", e);
       }
     }
 
-    // Erste Ladung & alle 5 Minuten neu laden
-    loadDexscreenerData();
-    setInterval(loadDexscreenerData, 300000);
+    loadCoins();
+    setInterval(loadCoins, 300000); // alle 5 Minuten aktualisieren
   </script>
 </body>
 </html>
