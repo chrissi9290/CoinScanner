@@ -37,10 +37,12 @@
 
   <script>
     async function loadCoins() {
-      const apiUrl = "https://corsproxy.io/?https://api.dexscreener.com/latest/dex/pairs";
+      const proxyUrl = "https://api.allorigins.win/get?url=";
+      const targetUrl = encodeURIComponent("https://api.dexscreener.com/latest/dex/pairs");
       try {
-        const res = await fetch(apiUrl);
-        const data = await res.json();
+        const res = await fetch(proxyUrl + targetUrl);
+        const result = await res.json();
+        const data = JSON.parse(result.contents);
         const solanaPairs = data.pairs.filter(pair => pair.chainId === "solana").slice(0, 10);
 
         const table = document.querySelector("#coin-table tbody");
