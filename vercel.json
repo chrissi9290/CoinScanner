@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "functions": {
+    "api/solana.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
